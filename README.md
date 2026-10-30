@@ -41,7 +41,7 @@ Reported following the [TRIPOD](https://www.tripod-statement.org/) guideline for
 - [x] Project setup
 - [x] Data preparation
 - [x] Cohort description
-- [ ] Model development
+- [x] Model development
 - [ ] Internal validation
 - [ ] External validation
 - [ ] Decision curve analysis
@@ -80,6 +80,21 @@ The biggest difference is grade: 76% of Rotterdam tumours were grade 3, against 
 
 Five years after surgery, 44% of Rotterdam patients (95% CI 42% to 47%) and 49% of GBSG 2 patients (45% to 54%) were alive without recurrence. Follow-up is much shorter in GBSG 2 (median 4.5 years against 9.1), which is why predictions are judged at 5 years.
 
+### The prognostic model
+
+The model was fitted to the Rotterdam patients only, with eight predictors chosen in advance from clinical knowledge rather than by statistical selection, which tends to overfit. Age, number of positive nodes and progesterone receptor are modelled with restricted cubic splines, so their effects need not be straight lines. Follow-up is censored at 5 years, the time point the model predicts. With 853 events and 12 parameters there are about 71 events per parameter, comfortably enough to avoid overfitting.
+
+![Hazard ratios from the Cox model](output/figures/hazard_ratios.png)
+
+- **Lymph nodes dominate.** A patient with 7 positive nodes has 2.3 times the hazard of recurrence or death of a patient with 2 (95% CI 2.0 to 2.7).
+- **Larger tumours, grade 3 and being postmenopausal raise the risk**; higher hormone receptor levels lower it.
+- **Hormonal therapy has a hazard ratio of 0.65.** It is a treatment rather than a patient characteristic, and was not randomised in Rotterdam, so this is not an estimate of what tamoxifen does.
+- **The apparent C-index is 0.69.** This is measured on the same patients the model was built on, so it is optimistic; the next stages estimate how much.
+- **Proportional hazards do not fully hold.** The effects of hormone receptors, nodes and tumour size are stronger early in follow-up than later (global test p < 0.001). Censoring at 5 years limits the problem, and the external validation shows whether it matters for 5-year predictions.
+- **The late-deaths decision does not matter.** Counting the 21 late deaths as events instead changes no coefficient by more than 0.02 and leaves the C-index at 0.689.
+
+The full model, including coefficients, spline knots and the baseline 5-year survival, is in [`output/tables/model_coefficients.csv`](output/tables/model_coefficients.csv), so others can reproduce its predictions. Predicted 5-year recurrence-free survival is the baseline value raised to the power exp(linear predictor minus its centre); the splines use the restricted cubic spline basis from the [`rms`](https://cran.r-project.org/package=rms) package.
+
 ## Repository structure
 
 ```
@@ -102,6 +117,7 @@ renv::restore()
 ```bash
 Rscript R/01_prepare_data.R      # build the development and validation datasets
 Rscript R/02_describe_cohorts.R  # Table 1 and recurrence-free survival by cohort
+Rscript R/03_develop_model.R     # fit the Cox model in Rotterdam
 ```
 
 ## Author

@@ -1,0 +1,3 @@
+analysis,events_5y,c_index,max_abs_coef_change
+Main: late deaths censored at last recurrence check,853,0.689,NA
+Sensitivity: late deaths counted as events at death,859,0.689,0.019
