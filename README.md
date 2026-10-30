@@ -40,17 +40,50 @@ Reported following the [TRIPOD](https://www.tripod-statement.org/) guideline for
 
 - [x] Project setup
 - [x] Data preparation
-- [ ] Cohort description
+- [x] Cohort description
 - [ ] Model development
 - [ ] Internal validation
 - [ ] External validation
 - [ ] Decision curve analysis
 - [ ] Write-up of findings
 
+## Results so far
+
+### The two cohorts
+
+| Characteristic | Rotterdam (development) | GBSG 2 (validation) |
+|---|---|---|
+| Patients | 1,546 | 686 |
+| Age, years, median (IQR) | 56 (46 to 66) | 53 (46 to 61) |
+| Postmenopausal, n (%) | 918 (59%) | 396 (58%) |
+| Tumour size 20 mm or less, n (%) | 501 (32%) | 180 (26%) |
+| Tumour size 21 to 50 mm, n (%) | 783 (51%) | 453 (66%) |
+| Tumour size over 50 mm, n (%) | 262 (17%) | 53 (8%) |
+| Grade 3, n (%) | 1,177 (76%) | 161 (23%) |
+| Positive lymph nodes, median (IQR) | 4 (2 to 7) | 3 (1 to 7) |
+| 1 to 3 positive nodes, n (%) | 764 (49%) | 376 (55%) |
+| 4 to 9 positive nodes, n (%) | 515 (33%) | 207 (30%) |
+| 10 or more positive nodes, n (%) | 267 (17%) | 103 (15%) |
+| Progesterone receptor, fmol/l, median (IQR) | 38 (5 to 187) | 32 (7 to 132) |
+| Oestrogen receptor, fmol/l, median (IQR) | 65 (13 to 196) | 36 (8 to 114) |
+| Hormonal therapy, n (%) | 339 (22%) | 246 (36%) |
+| Chemotherapy, n (%) | 580 (38%) | Not recorded |
+| Recurrences or deaths, n | 1,059 | 299 |
+| Median follow-up, years | 9.1 | 4.5 |
+| Recurrence-free at 5 years, % (95% CI) | 44 (42 to 47) | 49 (45 to 54) |
+
+The validation patients were broadly similar but had less advanced disease on several measures. They were slightly younger, had fewer tumours over 50 mm (8% against 17%), lower oestrogen receptor levels, and more of them had hormonal therapy (36% against 22%), because the GBSG 2 trial randomised women to tamoxifen or no tamoxifen.
+
+The biggest difference is grade: 76% of Rotterdam tumours were grade 3, against 23% in GBSG 2. Rotterdam records no grade 1 tumours at all, so this may partly reflect how grade was recorded in each source rather than how aggressive the cancers were. If so, grade may carry a different meaning in the two cohorts, which is exactly the kind of difference external validation is designed to catch.
+
+![Kaplan-Meier recurrence-free survival in the development and validation cohorts](output/figures/rfs_by_cohort.png)
+
+Five years after surgery, 44% of Rotterdam patients (95% CI 42% to 47%) and 49% of GBSG 2 patients (45% to 54%) were alive without recurrence. Follow-up is much shorter in GBSG 2 (median 4.5 years against 9.1), which is why predictions are judged at 5 years.
+
 ## Repository structure
 
 ```
-R/                 analysis scripts, run in numbered order
+R/                 analysis scripts, run in numbered order (plot_theme.R holds the chart style)
 data/processed/    analysis datasets built by script (not tracked)
 output/figures/    charts used in this README
 output/tables/     summary tables and model results
@@ -67,7 +100,8 @@ renv::restore()
 ```
 
 ```bash
-Rscript R/01_prepare_data.R   # build the development and validation datasets
+Rscript R/01_prepare_data.R      # build the development and validation datasets
+Rscript R/02_describe_cohorts.R  # Table 1 and recurrence-free survival by cohort
 ```
 
 ## Author
