@@ -42,7 +42,7 @@ Reported following the [TRIPOD](https://www.tripod-statement.org/) guideline for
 - [x] Data preparation
 - [x] Cohort description
 - [x] Model development
-- [ ] Internal validation
+- [x] Internal validation
 - [ ] External validation
 - [ ] Decision curve analysis
 - [ ] Write-up of findings
@@ -95,10 +95,29 @@ The model was fitted to the Rotterdam patients only, with eight predictors chose
 
 The full model, including coefficients, spline knots and the baseline 5-year survival, is in [`output/tables/model_coefficients.csv`](output/tables/model_coefficients.csv), so others can reproduce its predictions. Predicted 5-year recurrence-free survival is the baseline value raised to the power exp(linear predictor minus its centre); the splines use the restricted cubic spline basis from the [`rms`](https://cran.r-project.org/package=rms) package.
 
+### Internal validation
+
+A model always looks better on the patients it was built on. To estimate by how much, the whole model was refitted in 500 bootstrap resamples of the Rotterdam data and each refit was tested on the original data. The average drop in performance, the optimism, is subtracted from the apparent performance.
+
+| Measure | Apparent | Optimism | Corrected |
+|---|---|---|---|
+| C-index | 0.689 | 0.005 | 0.684 |
+| Calibration slope | 1.000 | 0.045 | 0.955 |
+| Mean absolute calibration error at 5 years | | | 0.6 percentage points |
+
+![Optimism-corrected calibration of 5-year predictions in Rotterdam](output/figures/calibration_internal.png)
+
+- **Very little optimism.** The C-index barely moves (0.689 to 0.684), as expected with 71 events per parameter and no data-driven predictor selection.
+- **Predictions are slightly too extreme.** A calibration slope of 0.955 means risks would need shrinking about 5% towards the average for new patients from the same population. That is small enough not to need correcting.
+- **Predicted risks match observed risks closely** across the whole range, from about 13% to 98% predicted 5-year risk, with an average error of 0.6 percentage points.
+- **A C-index of 0.68 is moderate.** The model separates patients, with half of them predicted between 38% and 74% risk, but it is far from perfect, as is typical for prognostic models built on routine clinical variables.
+
+Internal validation only shows the model is not overfitted to Rotterdam. It says nothing about patients treated elsewhere, which is what the external validation tests.
+
 ## Repository structure
 
 ```
-R/                 analysis scripts, run in numbered order (plot_theme.R holds the chart style)
+R/                 analysis scripts, run in numbered order (plot_theme.R holds the chart style, model_setup.R the shared model settings)
 data/processed/    analysis datasets built by script (not tracked)
 output/figures/    charts used in this README
 output/tables/     summary tables and model results
@@ -118,6 +137,7 @@ renv::restore()
 Rscript R/01_prepare_data.R      # build the development and validation datasets
 Rscript R/02_describe_cohorts.R  # Table 1 and recurrence-free survival by cohort
 Rscript R/03_develop_model.R     # fit the Cox model in Rotterdam
+Rscript R/04_internal_validation.R  # bootstrap optimism and calibration (about a minute)
 ```
 
 ## Author

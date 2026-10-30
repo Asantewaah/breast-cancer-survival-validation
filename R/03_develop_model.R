@@ -44,34 +44,9 @@ suppressPackageStartupMessages({
 })
 
 source(file.path("R", "plot_theme.R"))
+source(file.path("R", "model_setup.R"))  # horizon, predictor coding, helpers
 
-horizon <- 5  # years
-
-# Predictor coding, shared with the validation scripts
-add_model_vars <- function(d) {
-  d |>
-    mutate(
-      grade3  = as.integer(grade == 3),
-      nodes20 = pmin(nodes, 20),
-      lpgr    = log(pgr + 1),
-      ler     = log(er + 1)
-    )
-}
-
-# Administrative censoring at the prediction horizon
-censor_at <- function(time, event, h = horizon) {
-  list(time = pmin(time, h), event = ifelse(time > h, 0L, as.integer(event)))
-}
-
-development <- readRDS(file.path("data", "processed", "development.rds")) |>
-  add_model_vars()
-
-cens <- censor_at(development$rfs_time, development$rfs_event)
-development$time5  <- cens$time
-development$event5 <- cens$event
-
-dd <- datadist(development)
-options(datadist = "dd")
+development <- load_development()
 
 model_formula <- Surv(time5, event5) ~ rcs(age, 3) + meno + size + grade3 +
   rcs(nodes20, 3) + rcs(lpgr, 3) + ler + hormon
@@ -174,7 +149,6 @@ cens_alt <- censor_at(development$rfs_time_alt, development$rfs_event_alt)
 dev_alt <- development |> mutate(time5 = cens_alt$time, event5 = cens_alt$event)
 fit_alt <- cph(model_formula, data = dev_alt, x = TRUE, y = TRUE)
 
-c_index <- function(f) unname((f$stats["Dxy"] + 1) / 2)
 sens <- tibble(
   analysis = c("Main: late deaths censored at last recurrence check",
                "Sensitivity: late deaths counted as events at death"),

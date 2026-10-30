@@ -43,11 +43,13 @@ theme_project <- function(base_size = 12) {
 
 wrap <- function(text, width = 80) paste(strwrap(text, width), collapse = "\n")
 
-save_figure <- function(plot, name, width = 8, height = 5) {
-  # Wrap long titles and subtitles so they never run off the image
-  if (!is.null(plot$labels$title)) plot$labels$title <- wrap(plot$labels$title, 72)
-  if (!is.null(plot$labels$subtitle)) plot$labels$subtitle <- wrap(plot$labels$subtitle, 95)
-  if (!is.null(plot$labels$caption)) plot$labels$caption <- wrap(plot$labels$caption, 120)
+save_figure <- function(plot, name, width = 8, height = 5,
+                        title_width = 72, subtitle_width = 95, caption_width = 120) {
+  # Wrap long titles and subtitles so they never run off the image; narrower
+  # figures pass smaller widths
+  if (!is.null(plot$labels$title)) plot$labels$title <- wrap(plot$labels$title, title_width)
+  if (!is.null(plot$labels$subtitle)) plot$labels$subtitle <- wrap(plot$labels$subtitle, subtitle_width)
+  if (!is.null(plot$labels$caption)) plot$labels$caption <- wrap(plot$labels$caption, caption_width)
   dir.create(file.path("output", "figures"), recursive = TRUE, showWarnings = FALSE)
   path <- file.path("output", "figures", paste0(name, ".png"))
   ggsave(path, plot, width = width, height = height, dpi = 200, bg = "white")

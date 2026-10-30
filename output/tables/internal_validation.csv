@@ -1,0 +1,6 @@
+measure,apparent,optimism,corrected,bootstrap_samples
+C-index,0.689,0.005,0.684,500
+Calibration slope,1,0.045,0.955,500
+Nagelkerke R-squared,0.191,0.013,0.178,500
+Mean absolute calibration error at 5 years (ICI),NA,NA,0.006,500
+90th percentile absolute calibration error (E90),NA,NA,0.011,500
