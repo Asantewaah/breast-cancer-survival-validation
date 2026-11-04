@@ -2,7 +2,16 @@
 
 A model that predicts how likely a breast cancer is to come back can look excellent in the hospital where it was built and still mislead clinicians somewhere else. This project builds a Cox prognostic model for recurrence-free survival in one cohort of women with node-positive breast cancer, then tests it on patients from a separate clinical trial it has never seen: how well it ranks patients, whether its predicted risks match what actually happened, and whether using it would lead to better treatment decisions than treating everyone or no one.
 
-> Work in progress. This README grows as each stage of the analysis is completed.
+## Key findings
+
+- **The model transports well.** Built on 1,546 Rotterdam patients and tested unchanged on 686 patients from the German GBSG 2 trial, it ranks patients by risk just as well in the new cohort (C-index 0.69, 95% CI 0.66 to 0.72) as in the old one.
+- **Its predicted risks are on the right scale.** It predicted a 48% risk of recurrence or death within 5 years in GBSG 2, and 51% happened (observed/expected 1.06, 95% CI 0.97 to 1.15; calibration slope 0.99).
+- **It separates patients into clearly different outcomes.** 65% of GBSG 2's low-risk group were alive without recurrence at 5 years, against 19% of the high-risk group.
+- **Positive lymph nodes drive the risk.** With 7 rather than 2 positive nodes, the hazard of recurrence or death is 2.3 times higher.
+- **One weakness:** progesterone receptor is more protective in GBSG 2 than the model assumes (p = 0.006), and predictions are too cautious for women on hormonal therapy.
+- **It would help decisions only at higher thresholds.** Using the model to choose who gets extra treatment beats treating everyone once the risk threshold is 27% or more; below that, treating everyone is as good.
+
+The full set of headline numbers is in [`output/key_numbers.md`](output/key_numbers.md), and the study is reported against the TRIPOD+AI guideline in [`TRIPOD_checklist.md`](TRIPOD_checklist.md).
 
 ## Data
 
@@ -26,7 +35,7 @@ Both datasets ship with the [`survival`](https://cran.r-project.org/package=surv
 
 ## Approach
 
-Reported following the [TRIPOD](https://www.tripod-statement.org/) guideline for prediction model studies.
+Reported following the [TRIPOD+AI](https://doi.org/10.1136/bmj-2023-078378) guideline for prediction model studies (Collins et al., *BMJ* 2024), which replaced TRIPOD 2015. The item-by-item checklist is in [`TRIPOD_checklist.md`](TRIPOD_checklist.md).
 
 1. Prepare the development and validation data
 2. Describe both cohorts and compare their case mix
@@ -34,7 +43,7 @@ Reported following the [TRIPOD](https://www.tripod-statement.org/) guideline for
 4. Internal validation with bootstrapping, to estimate optimism
 5. External validation in GBSG 2: discrimination (C-index) and calibration (calibration slope and calibration plot at 5 years)
 6. Decision curve analysis: is the model useful for deciding who needs further treatment?
-7. Write-up of findings and the TRIPOD checklist
+7. Subgroup checks, write-up of findings and the TRIPOD+AI checklist
 
 ## Progress
 
@@ -45,9 +54,9 @@ Reported following the [TRIPOD](https://www.tripod-statement.org/) guideline for
 - [x] Internal validation
 - [x] External validation
 - [x] Decision curve analysis
-- [ ] Write-up of findings
+- [x] Write-up of findings
 
-## Results so far
+## Results
 
 ### The two cohorts
 
@@ -157,6 +166,30 @@ The threshold is where a patient and clinician would choose treatment. At 50%, t
 - **From 27% upwards, the model is better than both alternatives.** At a 50% threshold it would treat 43% of patients. Its net benefit is equivalent to avoiding about 16 unnecessary treatments per 100 patients compared with treating everyone, with no extra missed recurrences.
 - **This is illustrative.** The data are from the 1980s, and treatment decisions today use more information, such as HER2 status and genomic tests, than these eight variables.
 
+### Subgroups
+
+The model was checked separately in GBSG 2 by menopausal status and by hormonal therapy, the only patient groups available in both datasets.
+
+| Subgroup | Patients | C-index (95% CI) | Observed / expected (95% CI) | Calibration slope (95% CI) |
+|---|---|---|---|---|
+| Premenopausal | 290 | 0.71 (0.66 to 0.76) | 0.99 (0.86 to 1.14) | 1.22 (0.90 to 1.53) |
+| Postmenopausal | 396 | 0.68 (0.64 to 0.72) | 1.10 (0.99 to 1.23) | 0.86 (0.63 to 1.09) |
+| No hormonal therapy | 440 | 0.67 (0.63 to 0.70) | 1.08 (0.97 to 1.19) | 0.85 (0.63 to 1.08) |
+| Hormonal therapy | 246 | 0.72 (0.67 to 0.78) | 1.03 (0.87 to 1.22) | 1.45 (1.04 to 1.86) |
+
+Discrimination and overall calibration hold up in every subgroup. The exception is the calibration slope for women on hormonal therapy (1.45), which means the model's predictions are too cautious for them: their real risks are more spread out than predicted. This fits the progesterone receptor finding, since hormonal therapy works best in receptor-positive tumours. The data hold no sociodemographic variables, so performance across groups such as ethnicity or deprivation could not be checked.
+
+## Limitations
+
+- **Old cohorts.** Patients were treated between 1978 and 1993. Modern treatment, such as aromatase inhibitors and HER2-targeted therapy, has improved outcomes, so the absolute risks would probably overestimate risk today. A contemporary validation cohort is the obvious next step.
+- **Similar populations.** Both cohorts are European, node-positive and from the same era, which makes this a fairly gentle test of transportability.
+- **Proportional hazards do not fully hold.** Hormone receptor, node and size effects are stronger early in follow-up. Censoring at 5 years limits the problem, and external calibration at 5 years was good, but predictions at other time points should not be made from this model.
+- **Treatment as a predictor.** Hormonal therapy was not randomised in Rotterdam, so its hazard ratio is not the effect of tamoxifen, and predictions are less well calibrated for treated women.
+- **Grade recording.** Rotterdam records no grade 1 tumours and far more grade 3 than GBSG 2, probably partly a recording difference. Grade's effect was consistent across cohorts here, but the model assumes grade is defined the same way wherever it is used.
+- **Limited predictors.** Eight routine variables give a moderate C-index of about 0.69. Modern prognostic tools add HER2 status, Ki-67 and genomic tests.
+- **No sociodemographic data,** so fairness across groups such as ethnicity or deprivation could not be assessed.
+- **Late deaths.** 21 Rotterdam patients died after their last recurrence check. Censoring them or counting them as events made no practical difference.
+
 ## Repository structure
 
 ```
@@ -164,6 +197,8 @@ R/                 analysis scripts, run in numbered order (plot_theme.R holds t
 data/processed/    analysis datasets built by script (not tracked)
 output/figures/    charts used in this README
 output/tables/     summary tables and model results
+output/key_numbers.md  headline numbers from every step
+TRIPOD_checklist.md    TRIPOD+AI reporting checklist
 ```
 
 ## Reproducing the analysis
@@ -183,6 +218,7 @@ Rscript R/03_develop_model.R     # fit the Cox model in Rotterdam
 Rscript R/04_internal_validation.R  # bootstrap optimism and calibration (about a minute)
 Rscript R/05_external_validation.R  # discrimination and calibration in GBSG 2
 Rscript R/06_decision_curve.R       # net benefit in GBSG 2
+Rscript R/07_summary.R              # subgroup checks and output/key_numbers.md
 ```
 
 ## Author
