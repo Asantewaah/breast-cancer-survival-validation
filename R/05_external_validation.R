@@ -30,6 +30,7 @@
 #   output/tables/external_validation.csv
 #   output/tables/external_calibration_groups.csv
 #   output/tables/misspecification_test.csv
+#   output/tables/risk_group_curves.csv (data for the animated GIF)
 #   output/figures/calibration_external.png
 #   output/figures/risk_groups_external.png
 
@@ -230,6 +231,18 @@ group_summary <- validation |>
   ungroup()
 write_csv(group_summary |> mutate(across(where(is.double), ~ round(.x, 3))),
           file.path("output", "tables", "external_risk_groups.csv"))
+
+# Observed (Kaplan-Meier) and average predicted curves on a regular time grid,
+# saved so the animated GIF on my GitHub profile can be rebuilt from this repo
+grid_times <- seq(0, horizon, by = 0.05)
+gif_curves <- bind_rows(lapply(group_levels, function(g) {
+  s <- validation[validation$group == g, ]
+  km <- summary(survfit(Surv(time5, event5) ~ 1, data = s), times = grid_times, extend = TRUE)
+  pred <- c(1, colMeans(survest(fit, newdata = s, times = grid_times[-1])$surv))
+  tibble(group = sub(" risk", "", g), time = grid_times,
+         observed = round(km$surv, 4), predicted = round(pred, 4))
+}))
+write_csv(gif_curves, file.path("output", "tables", "risk_group_curves.csv"))
 
 labels_g <- group_summary |>
   mutate(time = horizon, surv = observed_rfs,
