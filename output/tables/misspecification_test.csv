@@ -1,0 +1,4 @@
+test,df,chisq,p,extra_log_hr
+All predictors added to the linear predictor,9,17.829,0.037,NA
+Grade 3 added,1,0.828,0.36,-0.121
+Log progesterone receptor added,1,7.659,0.0056,-0.083

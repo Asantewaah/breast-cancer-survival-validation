@@ -1,0 +1,10 @@
+measure,estimate,lower,upper
+Harrell's C-index,0.692,0.662,0.722
+Uno's C-index,0.677,0.647,0.707
+Observed 5-year risk (Kaplan-Meier),0.508,0.461,0.551
+Mean predicted 5-year risk,0.482,NA,NA
+Observed / expected (O/E),1.055,0.966,1.153
+Calibration slope,0.992,0.808,1.177
+Mean absolute calibration error (ICI),0.034,NA,NA
+Median absolute calibration error (E50),0.039,NA,NA
+90th percentile absolute calibration error (E90),0.052,NA,NA

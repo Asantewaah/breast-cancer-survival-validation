@@ -43,7 +43,7 @@ Reported following the [TRIPOD](https://www.tripod-statement.org/) guideline for
 - [x] Cohort description
 - [x] Model development
 - [x] Internal validation
-- [ ] External validation
+- [x] External validation
 - [ ] Decision curve analysis
 - [ ] Write-up of findings
 
@@ -114,6 +114,29 @@ A model always looks better on the patients it was built on. To estimate by how 
 
 Internal validation only shows the model is not overfitted to Rotterdam. It says nothing about patients treated elsewhere, which is what the external validation tests.
 
+### External validation in GBSG 2
+
+The Rotterdam model was applied unchanged to the 686 GBSG 2 trial patients, who played no part in building it. Nothing was re-estimated: not the coefficients, and not the baseline risk.
+
+| Measure | Estimate (95% CI) | What good looks like |
+|---|---|---|
+| Harrell's C-index | 0.69 (0.66 to 0.72) | As high as possible; 0.5 is chance |
+| Uno's C-index | 0.68 (0.65 to 0.71) | Less affected by length of follow-up |
+| Observed / expected 5-year risk | 1.06 (0.97 to 1.15) | 1 |
+| Calibration slope | 0.99 (0.81 to 1.18) | 1 |
+| Mean absolute calibration error | 3.4 percentage points | 0 |
+
+![Calibration of 5-year predictions in GBSG 2](output/figures/calibration_external.png)
+
+- **The model transports well.** Its C-index in GBSG 2 (0.69) is the same as in Rotterdam, so it ranks new patients by risk just as well as the ones it was built on.
+- **Its risks are on the right scale.** On average it predicted a 48% risk of recurrence or death by 5 years, and 51% happened (Kaplan-Meier). An observed-to-expected ratio of 1.06 means it slightly underpredicts, but the confidence interval includes 1.
+- **Its predictions are not too extreme.** A calibration slope of 0.99 means high-risk predictions are not too high and low-risk ones not too low.
+- **It separates patients into clearly different outcomes.** Using the Rotterdam thirds of risk, 65% of GBSG 2's low-risk group were alive without recurrence at 5 years, against 19% of the high-risk group, each within 4 percentage points of what the model predicted. Half of GBSG 2 patients fell into the low-risk group, which fits their less advanced disease.
+
+![Observed and predicted recurrence-free survival by risk group in GBSG 2](output/figures/risk_groups_external.png)
+
+**Where the model is not quite right.** Following Royston and Altman, I tested whether adding the predictors back on top of the model's risk score improves the fit in GBSG 2. Together they do, a little (p = 0.04), and almost all of that comes from progesterone receptor (p = 0.006): high progesterone receptor levels are more protective in GBSG 2 than the model assumes. One possible reason is treatment: hormonal therapy works through these receptors, and was given to 36% of GBSG 2 patients against 22% in Rotterdam. Despite the large difference in how often grade 3 was recorded, there is no evidence that grade's effect differs between the cohorts (p = 0.36).
+
 ## Repository structure
 
 ```
@@ -138,6 +161,7 @@ Rscript R/01_prepare_data.R      # build the development and validation datasets
 Rscript R/02_describe_cohorts.R  # Table 1 and recurrence-free survival by cohort
 Rscript R/03_develop_model.R     # fit the Cox model in Rotterdam
 Rscript R/04_internal_validation.R  # bootstrap optimism and calibration (about a minute)
+Rscript R/05_external_validation.R  # discrimination and calibration in GBSG 2
 ```
 
 ## Author

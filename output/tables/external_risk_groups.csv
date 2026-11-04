@@ -1,0 +1,4 @@
+group,n,predicted_rfs,observed_rfs
+Low risk,335,0.69,0.649
+Middle risk,216,0.444,0.42
+High risk,135,0.212,0.188
