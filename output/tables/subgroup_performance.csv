@@ -1,0 +1,6 @@
+subgroup,patients,events_5y,c_index,c_lower,c_upper,observed_risk,predicted_risk,oe,oe_lower,oe_upper,slope,slope_lower,slope_upper
+All GBSG 2 patients,686,285,0.692,0.662,0.722,0.508,0.482,1.055,0.966,1.153,0.992,0.808,1.177
+Premenopausal,290,113,0.709,0.664,0.755,0.461,0.468,0.986,0.855,1.137,1.215,0.902,1.528
+Postmenopausal,396,172,0.678,0.638,0.718,0.542,0.492,1.102,0.985,1.233,0.86,0.627,1.093
+No hormonal therapy,440,199,0.667,0.63,0.704,0.563,0.524,1.076,0.97,1.193,0.851,0.626,1.075
+Hormonal therapy,246,86,0.725,0.669,0.78,0.419,0.407,1.03,0.869,1.22,1.451,1.038,1.863
