@@ -44,7 +44,7 @@ Reported following the [TRIPOD](https://www.tripod-statement.org/) guideline for
 - [x] Model development
 - [x] Internal validation
 - [x] External validation
-- [ ] Decision curve analysis
+- [x] Decision curve analysis
 - [ ] Write-up of findings
 
 ## Results so far
@@ -137,6 +137,26 @@ The Rotterdam model was applied unchanged to the 686 GBSG 2 trial patients, who 
 
 **Where the model is not quite right.** Following Royston and Altman, I tested whether adding the predictors back on top of the model's risk score improves the fit in GBSG 2. Together they do, a little (p = 0.04), and almost all of that comes from progesterone receptor (p = 0.006): high progesterone receptor levels are more protective in GBSG 2 than the model assumes. One possible reason is treatment: hormonal therapy works through these receptors, and was given to 36% of GBSG 2 patients against 22% in Rotterdam. Despite the large difference in how often grade 3 was recorded, there is no evidence that grade's effect differs between the cohorts (p = 0.36).
 
+### Would using the model help decisions?
+
+Accurate predictions are not automatically useful. Decision curve analysis asks a practical question: if patients whose predicted 5-year risk is at or above some threshold were offered additional treatment, would that do more good than offering it to everyone, or to no one?
+
+The threshold is where a patient and clinician would choose treatment. At 50%, they judge that treating one patient who would have recurred is worth treating one who would not. Net benefit counts the correctly treated patients and subtracts the unnecessarily treated ones, weighted by the threshold. It is estimated in GBSG 2 with Kaplan-Meier, so censored patients are handled properly, and it is calculated directly in the code rather than with a package, so every step is visible.
+
+![Decision curve in GBSG 2](output/figures/decision_curve.png)
+
+| Threshold | Patients the model would treat | Net unnecessary treatments avoided per 100, compared with treating everyone |
+|---|---|---|
+| 20% | 97% | none |
+| 30% | 78% | 3.5 |
+| 40% | 57% | 5.9 |
+| 50% | 43% | 15.9 |
+| 60% | 31% | 23.8 |
+
+- **Below about 27%, the model adds nothing.** About half of these patients recur within 5 years, so at low thresholds treating everyone is as good as using the model.
+- **From 27% upwards, the model is better than both alternatives.** At a 50% threshold it would treat 43% of patients. Its net benefit is equivalent to avoiding about 16 unnecessary treatments per 100 patients compared with treating everyone, with no extra missed recurrences.
+- **This is illustrative.** The data are from the 1980s, and treatment decisions today use more information, such as HER2 status and genomic tests, than these eight variables.
+
 ## Repository structure
 
 ```
@@ -162,6 +182,7 @@ Rscript R/02_describe_cohorts.R  # Table 1 and recurrence-free survival by cohor
 Rscript R/03_develop_model.R     # fit the Cox model in Rotterdam
 Rscript R/04_internal_validation.R  # bootstrap optimism and calibration (about a minute)
 Rscript R/05_external_validation.R  # discrimination and calibration in GBSG 2
+Rscript R/06_decision_curve.R       # net benefit in GBSG 2
 ```
 
 ## Author
